@@ -3,6 +3,8 @@
 
 export type Type = 'normal' | 'fire' | 'water' | 'electric' | 'grass' | 'ice' | 'fighting' | 'poison' | 'ground' | 'flying' | 'psychic' | 'bug' | 'rock' | 'ghost' | 'dragon' | 'dark' | 'steel' | 'fairy';
 
+export type GameMode = 'gen6' | 'go';
+
 export const TYPE_COLORS: Record<Type, string> = {
   normal: '#A8A878',
   fire: '#EE8130',
@@ -119,6 +121,100 @@ const TYPE_CHART: Record<Type, Record<Type, number>> = {
   },
 };
 
+// Pokémon GO type chart (different multipliers)
+const GO_TYPE_CHART: Record<Type, Record<Type, number>> = {
+  normal: {
+    normal: 1, fire: 1, water: 1, electric: 1, grass: 1, ice: 1,
+    fighting: 1, poison: 1, ground: 1, flying: 1, psychic: 1, bug: 1,
+    rock: 1, ghost: 0.391, dragon: 1, dark: 1, steel: 1, fairy: 1,
+  },
+  fire: {
+    normal: 1, fire: 0.625, water: 0.625, electric: 1, grass: 1.6, ice: 1.6,
+    fighting: 1, poison: 1, ground: 1, flying: 1, psychic: 1, bug: 1.6,
+    rock: 0.625, ghost: 1, dragon: 0.625, dark: 1, steel: 1.6, fairy: 1,
+  },
+  water: {
+    normal: 1, fire: 1.6, water: 0.625, electric: 1, grass: 0.625, ice: 1,
+    fighting: 1, poison: 1, ground: 1.6, flying: 1, psychic: 1, bug: 1,
+    rock: 1.6, ghost: 1, dragon: 0.625, dark: 1, steel: 1, fairy: 1,
+  },
+  electric: {
+    normal: 1, fire: 1, water: 1.6, electric: 0.625, grass: 0.625, ice: 1,
+    fighting: 1, poison: 1, ground: 0.391, flying: 1.6, psychic: 1, bug: 1,
+    rock: 1, ghost: 1, dragon: 0.625, dark: 1, steel: 1, fairy: 1,
+  },
+  grass: {
+    normal: 1, fire: 0.625, water: 1.6, electric: 1, grass: 0.625, ice: 1,
+    fighting: 1, poison: 0.625, ground: 1.6, flying: 0.625, psychic: 1, bug: 0.625,
+    rock: 1.6, ghost: 1, dragon: 0.625, dark: 1, steel: 0.625, fairy: 1,
+  },
+  ice: {
+    normal: 1, fire: 0.625, water: 0.625, electric: 1, grass: 1.6, ice: 0.625,
+    fighting: 1, poison: 1, ground: 1.6, flying: 1.6, psychic: 1, bug: 1,
+    rock: 1, ghost: 1, dragon: 1.6, dark: 1, steel: 0.625, fairy: 1,
+  },
+  fighting: {
+    normal: 1.6, fire: 1, water: 1, electric: 1, grass: 1, ice: 1.6,
+    fighting: 1, poison: 0.625, ground: 1, flying: 0.625, psychic: 0.625, bug: 0.625,
+    rock: 1.6, ghost: 0.391, dragon: 1, dark: 1.6, steel: 1.6, fairy: 0.625,
+  },
+  poison: {
+    normal: 1, fire: 1, water: 1, electric: 1, grass: 1.6, ice: 1,
+    fighting: 1, poison: 0.625, ground: 0.625, flying: 1, psychic: 1, bug: 1,
+    rock: 1, ghost: 0.625, dragon: 1, dark: 1, steel: 0.391, fairy: 1.6,
+  },
+  ground: {
+    normal: 1, fire: 1.6, water: 1, electric: 1.6, grass: 0.625, ice: 1,
+    fighting: 1, poison: 1.6, ground: 1, flying: 0.391, psychic: 1, bug: 0.625,
+    rock: 1.6, ghost: 1, dragon: 1, dark: 1, steel: 1.6, fairy: 1,
+  },
+  flying: {
+    normal: 1, fire: 1, water: 1, electric: 0.625, grass: 1.6, ice: 1,
+    fighting: 1.6, poison: 1, ground: 1, flying: 1, psychic: 1, bug: 1.6,
+    rock: 0.625, ghost: 1, dragon: 1, dark: 1, steel: 1, fairy: 1,
+  },
+  psychic: {
+    normal: 1, fire: 1, water: 1, electric: 1, grass: 1, ice: 1,
+    fighting: 1.6, poison: 1.6, ground: 1, flying: 1, psychic: 0.625, bug: 1,
+    rock: 1, ghost: 1, dragon: 1, dark: 0.391, steel: 0.625, fairy: 1,
+  },
+  bug: {
+    normal: 1, fire: 0.625, water: 1, electric: 1, grass: 1.6, ice: 1,
+    fighting: 0.625, poison: 0.625, ground: 1, flying: 0.625, psychic: 1.6, bug: 1,
+    rock: 1, ghost: 0.625, dragon: 1, dark: 1.6, steel: 0.625, fairy: 0.625,
+  },
+  rock: {
+    normal: 1, fire: 1.6, water: 1, electric: 1, grass: 1, ice: 1.6,
+    fighting: 0.625, poison: 1, ground: 0.625, flying: 1.6, psychic: 1, bug: 1.6,
+    rock: 1, ghost: 1, dragon: 1, dark: 1, steel: 0.625, fairy: 1,
+  },
+  ghost: {
+    normal: 0.391, fire: 1, water: 1, electric: 1, grass: 1, ice: 1,
+    fighting: 1, poison: 1, ground: 1, flying: 1, psychic: 1.6, bug: 1,
+    rock: 1, ghost: 1.6, dragon: 1, dark: 0.625, steel: 1, fairy: 1,
+  },
+  dragon: {
+    normal: 1, fire: 1, water: 1, electric: 1, grass: 1, ice: 1,
+    fighting: 1, poison: 1, ground: 1, flying: 1, psychic: 1, bug: 1,
+    rock: 1, ghost: 1, dragon: 1.6, dark: 1, steel: 0.391, fairy: 0.391,
+  },
+  dark: {
+    normal: 1, fire: 1, water: 1, electric: 1, grass: 1, ice: 1,
+    fighting: 0.625, poison: 1, ground: 1, flying: 1, psychic: 1.6, bug: 1,
+    rock: 1, ghost: 1.6, dragon: 1, dark: 0.625, steel: 1, fairy: 0.625,
+  },
+  steel: {
+    normal: 1, fire: 0.625, water: 0.625, electric: 1, grass: 1, ice: 1.6,
+    fighting: 1, poison: 1, ground: 1, flying: 1, psychic: 1, bug: 1,
+    rock: 1.6, ghost: 1, dragon: 1, dark: 1, steel: 0.625, fairy: 1.6,
+  },
+  fairy: {
+    normal: 1, fire: 0.625, water: 1, electric: 1, grass: 1, ice: 1,
+    fighting: 1.6, poison: 0.391, ground: 1, flying: 1, psychic: 1, bug: 1,
+    rock: 1, ghost: 1, dragon: 1.6, dark: 1, steel: 0.625, fairy: 1,
+  },
+};
+
 // All 18 types in order
 export const ALL_TYPES: Type[] = [
   'normal', 'fire', 'water', 'electric', 'grass', 'ice',
@@ -172,7 +268,7 @@ export const TYPE_NAMES_EN: Record<Type, string> = {
 // Generate random opponent types
 export function getRandomOpponentTypes(): Type[] {
   const singleType: Type = ALL_TYPES[Math.floor(Math.random() * ALL_TYPES.length)];
-  
+
   // 40% chance of dual type
   if (Math.random() < 0.4) {
     const secondType = ALL_TYPES[Math.floor(Math.random() * ALL_TYPES.length)];
@@ -181,7 +277,7 @@ export function getRandomOpponentTypes(): Type[] {
       return [singleType, secondType];
     }
   }
-  
+
   return [singleType];
 }
 
@@ -192,17 +288,31 @@ export interface CalculationResult {
   isSingleType: boolean;
 }
 
-export function calculateEffectiveness(attackerType: Type, defenderTypes: Type[]): CalculationResult {
+export function calculateEffectiveness(attackerType: Type, defenderTypes: Type[], gameMode: GameMode = 'gen6'): CalculationResult {
+  const chart = gameMode === 'go' ? GO_TYPE_CHART : TYPE_CHART;
   const breakdown = defenderTypes.map(type => ({
     type,
-    factor: TYPE_CHART[attackerType][type],
+    factor: chart[attackerType][type],
   }));
-  
+
   const multiplier = breakdown.reduce((acc, { factor }) => acc * factor, 1);
   const isSingleType = defenderTypes.length === 1;
-  
+
   return { multiplier, breakdown, isSingleType };
 }
 
-// Get all possible multipliers
-export const POSSIBLE_MULTIPLIERS = [0, 0.25, 0.5, 1, 2, 4];
+// Get all possible multipliers for a game mode
+export const POSSIBLE_MULTIPLIERS: Record<GameMode, number[]> = {
+  gen6: [0, 0.25, 0.5, 1, 2, 4],
+  go: [0.244, 0.391, 0.625, 1, 1.6, 2.56],
+};
+
+// Get type chart for a game mode
+export function getTypeChartData(gameMode: GameMode): Record<Type, Record<Type, number>> {
+  return gameMode === 'go' ? GO_TYPE_CHART : TYPE_CHART;
+}
+
+// Get multipliers for a game mode
+export function getMultipliers(gameMode: GameMode): number[] {
+  return POSSIBLE_MULTIPLIERS[gameMode];
+}

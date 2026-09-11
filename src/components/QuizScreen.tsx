@@ -1,9 +1,18 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getRandomOpponentTypes, calculateEffectiveness, Type, POSSIBLE_MULTIPLIERS } from '../data/typeData';
+import {
+  getRandomOpponentTypes,
+  calculateEffectiveness,
+  Type,
+  GameMode,
+  getMultipliers,
+} from '../data/typeData';
+import TypeBadge from './TypeBadge';
+import MultiplierCard from './MultiplierCard';
 
 interface QuizScreenProps {
   attackerType: Type;
+  gameMode: GameMode;
   onExit: () => void;
   language: 'en' | 'jp';
 }
@@ -16,18 +25,20 @@ interface QuestionState {
   score: number;
 }
 
-export default function QuizScreen({ attackerType, language }: QuizScreenProps) {
+export default function QuizScreen({ attackerType, gameMode, onExit: _onExit, language }: QuizScreenProps) {
   const { t, i18n } = useTranslation();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  
+
   const getTypeName = (type: Type) => {
     return i18n.t(`type.${type}`);
   };
 
+  const multipliers = getMultipliers(gameMode);
+
   const generateExplanation = useCallback((attackerType: Type, defenderTypes: Type[], result: ReturnType<typeof calculateEffectiveness>) => {
     const { multiplier, breakdown, isSingleType } = result;
     const attackerName = getTypeName(attackerType);
-    
+
     if (isSingleType) {
       const defenderName = getTypeName(defenderTypes[0]);
       return t('explanation.single', { attacker: attackerName, factor: multiplier, defender: defenderName });
@@ -49,13 +60,6 @@ export default function QuizScreen({ attackerType, language }: QuizScreenProps) 
     score: 0,
   });
 
-  const getMultiplierColor = (multiplier: number) => {
-    if (multiplier === 0) return 'bg-gray-400 text-white';
-    if (multiplier < 1) return 'bg-orange-400 text-white';
-    if (multiplier === 1) return 'bg-green-500 text-white';
-    return 'bg-red-500 text-white';
-  };
-
   const handleNext = useCallback(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -71,16 +75,16 @@ export default function QuizScreen({ attackerType, language }: QuizScreenProps) 
   }, []);
 
   const handleSelectMultiplier = useCallback((multiplier: number) => {
-    const result = calculateEffectiveness(attackerType, question.opponentTypes);
+    const result = calculateEffectiveness(attackerType, question.opponentTypes, gameMode);
     const isCorrect = multiplier === result.multiplier;
-    
+
     setQuestion(prev => ({
       ...prev,
       selectedMultiplier: multiplier,
       isCorrect: isCorrect,
       score: isCorrect ? prev.score + 1 : prev.score,
     }));
-    
+
     // Auto-advance on correct answer after 1000ms
     if (isCorrect) {
       if (timeoutRef.current) {
@@ -90,9 +94,9 @@ export default function QuizScreen({ attackerType, language }: QuizScreenProps) 
         handleNext();
       }, 1000);
     }
-  }, [attackerType, question.opponentTypes, handleNext]);
+  }, [attackerType, question.opponentTypes, gameMode, handleNext]);
 
-  const result = calculateEffectiveness(attackerType, question.opponentTypes);
+  const result = calculateEffectiveness(attackerType, question.opponentTypes, gameMode);
   const explanation = question.isCorrect !== null ? generateExplanation(attackerType, question.opponentTypes, result) : '';
 
   // Cleanup timeout on unmount
@@ -122,28 +126,17 @@ export default function QuizScreen({ attackerType, language }: QuizScreenProps) 
         {/* Attacker Type Display */}
         <div className="flex justify-center mb-6">
           <div className="text-center">
-            <span className="text-sm text-gray-600 dark:text-gray-400 mb-1 block">{t('home.attackerType')}</span>
-            <div
-              className="type-badge text-xl px-6 py-3"
-              style={{ backgroundColor: `var(--type-${attackerType})` }}
-            >
-              {getTypeName(attackerType)}
-            </div>
+            <span className="text-sm text-gray-600 dark:text-gray-400 mb-2 block">{t('home.attackerType')}</span>
+            <TypeBadge type={attackerType} size="lg" />
           </div>
         </div>
 
         {/* Opponent Type Display */}
         <div className="text-center mb-6">
-          <span className="text-sm text-gray-600 dark:text-gray-400 mb-1 block">{t('quiz.opponent')}</span>
-          <div className="flex justify-center gap-2">
+          <span className="text-sm text-gray-600 dark:text-gray-400 mb-2 block">{t('quiz.opponent')}</span>
+          <div className="flex justify-center gap-3">
             {question.opponentTypes.map((type, idx) => (
-              <div
-                key={idx}
-                className="type-badge text-xl"
-                style={{ backgroundColor: `var(--type-${type})` }}
-              >
-                {getTypeName(type)}
-              </div>
+              <TypeBadge key={idx} type={type} size="lg" />
             ))}
           </div>
         </div>
@@ -152,26 +145,16 @@ export default function QuizScreen({ attackerType, language }: QuizScreenProps) 
         <div className="mb-6">
           <p className="text-center text-gray-600 dark:text-gray-400 mb-4">{t('quiz.choose')}</p>
           <div className="grid grid-cols-3 gap-3">
-            {POSSIBLE_MULTIPLIERS.map((multiplier) => (
-              <button
+            {multipliers.map((multiplier) => (
+              <MultiplierCard
                 key={multiplier}
+                multiplier={multiplier}
+                isSelected={question.selectedMultiplier === multiplier}
+                isCorrect={question.isCorrect === true && question.selectedMultiplier === multiplier}
+                isRevealed={question.isCorrect !== null && multiplier === result.multiplier}
                 onClick={() => question.isCorrect === null && handleSelectMultiplier(multiplier)}
                 disabled={question.isCorrect !== null}
-                className={`
-                  py-4 rounded-xl font-bold text-2xl transition-all duration-200
-                  ${question.selectedMultiplier === multiplier
-                    ? question.isCorrect === true
-                      ? 'bg-green-500 text-white scale-105'
-                      : 'bg-red-500 text-white scale-105'
-                    : question.isCorrect !== null && multiplier === result.multiplier
-                      ? 'bg-green-500 text-white'
-                      : getMultiplierColor(multiplier) + ' hover:scale-105'
-                  }
-                  ${question.isCorrect === null ? 'cursor-pointer' : 'cursor-default'}
-                `}
-              >
-                {multiplier}x
-              </button>
+              />
             ))}
           </div>
         </div>
