@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getRandomOpponentTypes, calculateEffectiveness, Type, POSSIBLE_MULTIPLIERS, TYPE_NAMES_EN, TYPE_NAMES_JP } from '../data/typeData';
+import { getRandomOpponentTypes, calculateEffectiveness, Type, POSSIBLE_MULTIPLIERS } from '../data/typeData';
 
 interface QuizScreenProps {
   attackerType: Type;
@@ -17,11 +17,29 @@ interface QuestionState {
 }
 
 export default function QuizScreen({ attackerType, language }: QuizScreenProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   const getTypeName = (type: Type) => {
-    return language === 'jp' ? TYPE_NAMES_JP[type] : TYPE_NAMES_EN[type];
+    return i18n.t(`type.${type}`);
   };
+
+  const generateExplanation = useCallback((attackerType: Type, defenderTypes: Type[], result: ReturnType<typeof calculateEffectiveness>) => {
+    const { multiplier, breakdown, isSingleType } = result;
+    const attackerName = getTypeName(attackerType);
+    
+    if (isSingleType) {
+      const defenderName = getTypeName(defenderTypes[0]);
+      return t('explanation.single', { attacker: attackerName, factor: multiplier, defender: defenderName });
+    } else {
+      // Dual-type explanation
+      const factors = breakdown.map(({ type, factor }) => {
+        const typeName = getTypeName(type);
+        return `${typeName} ${factor}x`;
+      }).join(language === 'jp' ? '、' : ' and ');
+      return t('explanation.dual', { attacker: attackerName, factors, total: multiplier });
+    }
+  }, [getTypeName, t, language]);
 
   const [question, setQuestion] = useState<QuestionState>({
     opponentTypes: getRandomOpponentTypes(),
@@ -38,6 +56,20 @@ export default function QuizScreen({ attackerType, language }: QuizScreenProps) 
     return 'bg-red-500 text-white';
   };
 
+  const handleNext = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    setQuestion(prev => ({
+      ...prev,
+      opponentTypes: getRandomOpponentTypes(),
+      selectedMultiplier: null,
+      isCorrect: null,
+      questionNumber: prev.questionNumber + 1,
+    }));
+  }, []);
+
   const handleSelectMultiplier = useCallback((multiplier: number) => {
     const result = calculateEffectiveness(attackerType, question.opponentTypes);
     const isCorrect = multiplier === result.multiplier;
@@ -48,19 +80,29 @@ export default function QuizScreen({ attackerType, language }: QuizScreenProps) 
       isCorrect: isCorrect,
       score: isCorrect ? prev.score + 1 : prev.score,
     }));
-  }, [attackerType, question.opponentTypes]);
-
-  const handleNext = useCallback(() => {
-    setQuestion(prev => ({
-      ...prev,
-      opponentTypes: getRandomOpponentTypes(),
-      selectedMultiplier: null,
-      isCorrect: null,
-      questionNumber: prev.questionNumber + 1,
-    }));
-  }, []);
+    
+    // Auto-advance on correct answer after 1000ms
+    if (isCorrect) {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => {
+        handleNext();
+      }, 1000);
+    }
+  }, [attackerType, question.opponentTypes, handleNext]);
 
   const result = calculateEffectiveness(attackerType, question.opponentTypes);
+  const explanation = question.isCorrect !== null ? generateExplanation(attackerType, question.opponentTypes, result) : '';
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
@@ -142,7 +184,7 @@ export default function QuizScreen({ attackerType, language }: QuizScreenProps) 
                 {question.isCorrect ? t('quiz.correct') : t('quiz.incorrect')}
               </h2>
               <p className="text-gray-700 dark:text-gray-300 text-sm">
-                {result.explanation}
+                {explanation}
               </p>
             </div>
             {!question.isCorrect && (
@@ -153,15 +195,6 @@ export default function QuizScreen({ attackerType, language }: QuizScreenProps) 
                 {t('quiz.next')}
               </button>
             )}
-          </div>
-        )}
-
-        {/* Auto-advance for correct answer */}
-        {question.isCorrect === true && (
-          <div className="text-center animate-pulse">
-            <p className="text-green-600 dark:text-green-400 font-semibold">
-              {t('quiz.correct')}!
-            </p>
           </div>
         )}
       </div>

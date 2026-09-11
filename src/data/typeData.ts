@@ -189,7 +189,7 @@ export function getRandomOpponentTypes(): Type[] {
 export interface CalculationResult {
   multiplier: number;
   breakdown: Array<{ type: Type; factor: number }>;
-  explanation: string;
+  isSingleType: boolean;
 }
 
 export function calculateEffectiveness(attackerType: Type, defenderTypes: Type[]): CalculationResult {
@@ -199,13 +199,9 @@ export function calculateEffectiveness(attackerType: Type, defenderTypes: Type[]
   }));
   
   const multiplier = breakdown.reduce((acc, { factor }) => acc * factor, 1);
+  const isSingleType = defenderTypes.length === 1;
   
-  // Generate explanation
-  const explanation = attackerType === defenderTypes[0] && defenderTypes.length === 1
-    ? `${TYPE_NAMES_EN[attackerType]} deals ${multiplier}x against ${defenderTypes[0]}.`
-    : breakdown.map(({ type, factor }) => `${TYPE_NAMES_EN[attackerType]} deals ${factor}x against ${TYPE_NAMES_EN[type]}`).join(' and ') + ` = ${multiplier}x damage.`;
-  
-  return { multiplier, breakdown, explanation };
+  return { multiplier, breakdown, isSingleType };
 }
 
 // Get all possible multipliers
