@@ -11,7 +11,6 @@ import {
   Droplet,
   Gem,
   Mountain,
-  Brain,
   Moon,
   Sparkles,
   HandFist,

@@ -3,6 +3,7 @@ import { Type, ALL_TYPES, TYPE_NAMES_EN, TYPE_NAMES_JP, getMultipliers, GameMode
 import TypeBadge from './TypeBadge';
 import MultiplierCard from './MultiplierCard';
 import InstallPrompt from './InstallPrompt';
+import { useState } from 'react';
 
 interface HomeScreenProps {
   selectedType: Type;
@@ -21,12 +22,33 @@ export default function HomeScreen({
 }: HomeScreenProps) {
   const { t, i18n } = useTranslation();
   const language = i18n.language as 'en' | 'jp';
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [pendingType, setPendingType] = useState<Type | null>(null);
 
   const getTypeName = (type: Type) => {
     return language === 'jp' ? TYPE_NAMES_JP[type] : TYPE_NAMES_EN[type];
   };
 
   const multipliers = getMultipliers(gameMode);
+
+  const handleTypeCardClick = (type: Type) => {
+    setPendingType(type);
+    setConfirmDialogOpen(true);
+  };
+
+  const handleConfirm = () => {
+    if (pendingType) {
+      onTypeChange(pendingType);
+      onStartQuiz();
+    }
+    setConfirmDialogOpen(false);
+    setPendingType(null);
+  };
+
+  const handleCancel = () => {
+    setConfirmDialogOpen(false);
+    setPendingType(null);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center p-4">
@@ -70,22 +92,24 @@ export default function HomeScreen({
           </div>
         </div>
 
-        {/* Type Selection */}
+        {/* Type Selection Grid */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             {t('home.selectType')}
           </label>
-          <select
-            value={selectedType}
-            onChange={(e) => onTypeChange(e.target.value as Type)}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-          >
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
             {ALL_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {getTypeName(type)}
-              </option>
+              <button
+                key={type}
+                onClick={() => handleTypeCardClick(type)}
+                className={`transition-all duration-200 hover:scale-105 ${
+                  selectedType === type ? 'ring-2 ring-indigo-500 rounded-2xl' : ''
+                }`}
+              >
+                <TypeBadge type={type} size="md" showLabel={true} />
+              </button>
             ))}
-          </select>
+          </div>
         </div>
 
         {/* Preview Selected Type Badge */}
@@ -93,13 +117,39 @@ export default function HomeScreen({
           <TypeBadge type={selectedType} size="lg" />
         </div>
 
-        {/* Start Quiz Button */}
-        <button
-          onClick={onStartQuiz}
-          className="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl mb-6"
-        >
-          {t('home.startQuiz')}
-        </button>
+        {/* Confirm Dialog */}
+        {confirmDialogOpen && pendingType && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 text-center">
+                {t('dialog.confirm')}
+              </h2>
+              <div className="flex flex-col items-center mb-6">
+                <span className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  {t('dialog.selectedType')}
+                </span>
+                <TypeBadge type={pendingType} size="lg" />
+                <span className="mt-2 text-lg font-semibold text-gray-800 dark:text-white">
+                  {getTypeName(pendingType)}
+                </span>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleCancel}
+                  className="flex-1 py-3 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                >
+                  {t('dialog.cancel')}
+                </button>
+                <button
+                  onClick={handleConfirm}
+                  className="flex-1 py-3 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors"
+                >
+                  {t('dialog.confirm')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Install Prompt */}
         <div className="flex justify-center mb-6">

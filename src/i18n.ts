@@ -26,12 +26,17 @@ export const resources = {
       'theme.dark': 'Dark',
       'theme.light': 'Light',
       'install.app': 'Install App',
-      // Multiplier labels
-      'multiplier.immune': 'Immune',
-      'multiplier.weak': 'Not Effective',
+      // Multiplier labels - franchise accurate
+      'multiplier.immune': 'No Effect',
+      'multiplier.weak': 'Not Very Effective',
       'multiplier.normal': 'Normal',
       'multiplier.super': 'Super Effective',
-      'multiplier.double': 'Double Super Effective',
+      'multiplier.double': 'Super Effective',
+      // Confirmation dialog
+      'dialog.confirm': 'Confirm',
+      'dialog.cancel': 'Cancel',
+      'dialog.startQuiz': 'Start Quiz',
+      'dialog.selectedType': 'Selected Type',
       // Explanation templates
       'explanation.single': '{{attacker}} deals {{factor}}x against {{defender}}.',
       'explanation.dual': '{{attacker}} deals {{factors}} = {{total}}x damage.',
@@ -80,12 +85,17 @@ export const resources = {
       'theme.dark': 'ダーク',
       'theme.light': 'ライト',
       'install.app': 'アプリをインストール',
-      // Multiplier labels
-      'multiplier.immune': '無効',
-      'multiplier.weak': '効果なし',
-      'multiplier.normal': 'ふつう',
-      'multiplier.super': '効果あり',
-      'multiplier.double': 'とても効果あり',
+      // Multiplier labels - franchise accurate
+      'multiplier.immune': 'こうかなし',
+      'multiplier.weak': 'いまひとつ',
+      'multiplier.normal': 'こうかあり',
+      'multiplier.super': 'こうかばつぐん',
+      'multiplier.double': 'こうかばつぐん',
+      // Confirmation dialog
+      'dialog.confirm': 'OK',
+      'dialog.cancel': 'キャンセル',
+      'dialog.startQuiz': 'クイズ開始',
+      'dialog.selectedType': '選択したタイプ',
       // Explanation templates
       'explanation.single': '{{attacker}}タイプの技は {{defender}}タイプに対して {{factor}}倍ダメージです。',
       'explanation.dual': '{{attacker}}タイプの技は {{factors}} ＝ {{total}}倍ダメージです。',
