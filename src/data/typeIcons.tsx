@@ -37,7 +37,7 @@ export const TYPE_ICONS: Record<Type, TypeIconConfig> = {
   ice: { icon: Snowflake, color: "#96D9D6", iconColor: "#FFFFFF" },
   fighting: { icon: HandFist, color: "#C22E28", iconColor: "#FFFFFF" },
   poison: { icon: Skull, color: "#A33EA1", iconColor: "#FFFFFF" },
-  ground: { icon: Mountain, color: "#E2BF65", iconColor: "FFF8F0" },
+  ground: { icon: Mountain, color: "#E2BF65", iconColor: "#FFF8F0" },
   flying: { icon: Feather, color: "#A98FFC", iconColor: "#FFFFFF" },
   psychic: { icon: Galaxy, color: "#F95587", iconColor: "#FFFFFF" },
   bug: { icon: Bug, color: "#A6B91A", iconColor: "#FFFFFF" },
