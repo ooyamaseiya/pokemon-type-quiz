@@ -18,6 +18,8 @@ import {
   Stone,
 } from "lucide-react";
 
+import DragonIcon from "../assets/DragonIcon";
+
 import { Type } from "./typeData";
 
 export interface TypeIconConfig {
@@ -41,7 +43,7 @@ export const TYPE_ICONS: Record<Type, TypeIconConfig> = {
   bug: { icon: Bug, color: "#A6B91A", iconColor: "#FFFFFF" },
   rock: { icon: Stone, color: "#B6A136", iconColor: "#FFFFFF" },
   ghost: { icon: Ghost, color: "#735792", iconColor: "#FFFFFF" },
-  dragon: { color: "#6F35FC", iconColor: "#FFFFFF" },
+  dragon: { icon: DragonIcon, color: "#6F35FC", iconColor: "#FFFFFF" },
   dark: { icon: Moon, color: "#705746", iconColor: "#FFFFFF" },
   steel: { icon: Bolt, color: "#B7B7CE", iconColor: "#FFFFFF" },
   fairy: { icon: Sparkles, color: "#D685AD", iconColor: "#FFFFFF" },
