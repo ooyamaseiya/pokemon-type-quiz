@@ -9,12 +9,13 @@ import {
   Zap,
   Leaf,
   Droplet,
-  Swords,
   Gem,
   Mountain,
   Brain,
   Moon,
   Sparkles,
+  HandFist,
+  Galaxy,
 } from "lucide-react";
 
 import { Type } from "./typeData";
@@ -26,22 +27,22 @@ export interface TypeIconConfig {
 }
 
 export const TYPE_ICONS: Record<Type, TypeIconConfig> = {
-  normal: { icon: Circle, color: "#A8A878", iconColor: "#6B6B4A" },
+  normal: { icon: Circle, color: "#A8A878", iconColor: "#FFF8F0" },
   fire: { icon: Flame, color: "#EE8130", iconColor: "#FFF8F0" },
   water: { icon: Droplet, color: "#6390F0", iconColor: "#FFFFFF" },
-  electric: { icon: Zap, color: "#F7D02C", iconColor: "#8B7500" },
+  electric: { icon: Zap, color: "#F7D02C", iconColor: "#FFF8F0" },
   grass: { icon: Leaf, color: "#7AC74C", iconColor: "#FFFFFF" },
-  ice: { icon: Snowflake, color: "#96D9D6", iconColor: "#1E5F5E" },
-  fighting: { icon: Swords, color: "#C22E28", iconColor: "#FFFFFF" },
+  ice: { icon: Snowflake, color: "#96D9D6", iconColor: "#FFFFFF" },
+  fighting: { icon: HandFist, color: "#C22E28", iconColor: "#FFFFFF" },
   poison: { color: "#A33EA1", iconColor: "#FFFFFF" },
-  ground: { icon: Mountain, color: "#E2BF65", iconColor: "#5C4A1E" },
+  ground: { icon: Mountain, color: "#E2BF65", iconColor: "FFF8F0" },
   flying: { icon: Feather, color: "#A98FFC", iconColor: "#FFFFFF" },
-  psychic: { icon: Brain, color: "#F95587", iconColor: "#FFFFFF" },
+  psychic: { icon: Galaxy, color: "#F95587", iconColor: "#FFFFFF" },
   bug: { icon: Bug, color: "#A6B91A", iconColor: "#FFFFFF" },
   rock: { icon: Gem, color: "#B6A136", iconColor: "#FFFFFF" },
   ghost: { icon: Ghost, color: "#735792", iconColor: "#FFFFFF" },
   dragon: { color: "#6F35FC", iconColor: "#FFFFFF" },
   dark: { icon: Moon, color: "#705746", iconColor: "#FFFFFF" },
-  steel: { icon: Bolt, color: "#B7B7CE", iconColor: "#4A4A5A" },
+  steel: { icon: Bolt, color: "#B7B7CE", iconColor: "#FFFFFF" },
   fairy: { icon: Sparkles, color: "#D685AD", iconColor: "#FFFFFF" },
 };
