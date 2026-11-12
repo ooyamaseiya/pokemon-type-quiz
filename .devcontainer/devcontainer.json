@@ -1,0 +1,21 @@
+{
+  "name": "Vite & OpenCode Dev Container",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/gotop",
+
+  "initializeCommand": "IP=$(getent ahostsv4 dev-infer.local | awk '{print $1; exit}'); echo \"DEV_INFER_IP=${IP:-127.0.0.1}\" > .devcontainer/.env",
+
+  "forwardPorts": [5173],
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Vue.volar"
+      ]
+    }
+  },
+
+  "remoteUser": "root",
+  "postCreateCommand": "update-ca-certificates && npm install -g opencode-ai && npm install"
+}
