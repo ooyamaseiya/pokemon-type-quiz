@@ -1,0 +1,27 @@
+{
+  "name": "Vite & Agent Dev Container",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.11-bullseye",
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
+  },
+
+  "runArgs": ["--add-host=host.docker.internal:host-gateway"],
+  "forwardPorts": [5173, 8000],
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Vue.volar",
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ]
+    }
+  },
+
+  // root に変更
+  "remoteUser": "root",
+  "postCreateCommand": "pip install uv && npm install"
+}
