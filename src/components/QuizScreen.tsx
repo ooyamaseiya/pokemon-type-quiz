@@ -21,6 +21,7 @@ interface QuizScreenProps {
 
 interface QuestionState {
   opponentTypes: Type[];
+  questionKey: string;
   selectedMultiplier: number | null;
   isCorrect: boolean | null;
   questionNumber: number;
@@ -60,12 +61,19 @@ export default function QuizScreen({ attackerType, gameMode, quizMode, onExit: _
     }
   }, [getTypeName, t, language]);
 
-  const [question, setQuestion] = useState<QuestionState>({
-    opponentTypes: generateOpponentTypes(quizMode),
-    selectedMultiplier: null,
-    isCorrect: null,
-    questionNumber: 1,
-    score: 0,
+  const seenKeysRef = useRef<Set<string>>(new Set());
+
+  const [question, setQuestion] = useState<QuestionState>(() => {
+    const generated = generateOpponentTypes(quizMode, seenKeysRef.current, null);
+    seenKeysRef.current.add(generated.key);
+    return {
+      opponentTypes: generated.types,
+      questionKey: generated.key,
+      selectedMultiplier: null,
+      isCorrect: null,
+      questionNumber: 1,
+      score: 0,
+    };
   });
 
   const handleNext = useCallback(() => {
@@ -73,14 +81,20 @@ export default function QuizScreen({ attackerType, gameMode, quizMode, onExit: _
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
+    const generated = generateOpponentTypes(quizMode, seenKeysRef.current, question.questionKey);
+    if (generated.resetOccurred) {
+      seenKeysRef.current.clear();
+    }
+    seenKeysRef.current.add(generated.key);
     setQuestion(prev => ({
       ...prev,
-      opponentTypes: generateOpponentTypes(quizMode),
+      opponentTypes: generated.types,
+      questionKey: generated.key,
       selectedMultiplier: null,
       isCorrect: null,
       questionNumber: prev.questionNumber + 1,
     }));
-  }, [quizMode]);
+  }, [quizMode, question.questionKey]);
 
   const handleSelectMultiplier = useCallback((multiplier: number) => {
     const result = calculateEffectiveness(attackerType, question.opponentTypes, gameMode);

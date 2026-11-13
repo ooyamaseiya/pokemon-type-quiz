@@ -17,6 +17,7 @@ function App() {
   const [language, setLanguage] = useState<'en' | 'jp'>('en');
   const [gameMode, setGameMode] = useState<GameMode>('gen6');
   const [quizMode, setQuizMode] = useState<QuizMode>('both');
+  const [quizSession, setQuizSession] = useState(0);
 
   // Load settings from localStorage
   useEffect(() => {
@@ -50,6 +51,7 @@ function App() {
   }, [quizMode]);
 
   const startQuiz = () => {
+    setQuizSession((session) => session + 1);
     setScreen('quiz');
   };
 
@@ -83,6 +85,7 @@ function App() {
 
       {screen === 'quiz' && (
         <QuizScreen
+          key={`${quizSession}-${gameMode}-${quizMode}`}
           attackerType={selectedType}
           gameMode={gameMode}
           quizMode={quizMode}
