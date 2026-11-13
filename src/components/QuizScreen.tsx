@@ -1,18 +1,20 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  getRandomOpponentTypes,
   calculateEffectiveness,
   Type,
   GameMode,
   getMultipliers,
 } from '../data/typeData';
+import { QuizMode } from '../types/quiz';
+import { generateOpponentTypes } from '../utils/quizGenerator';
 import TypeBadge from './TypeBadge';
 import MultiplierCard from './MultiplierCard';
 
 interface QuizScreenProps {
   attackerType: Type;
   gameMode: GameMode;
+  quizMode: QuizMode;
   onExit: () => void;
   language: 'en' | 'jp';
 }
@@ -25,7 +27,13 @@ interface QuestionState {
   score: number;
 }
 
-export default function QuizScreen({ attackerType, gameMode, onExit: _onExit, language }: QuizScreenProps) {
+const MODE_BADGE_KEYS: Record<QuizMode, string> = {
+  both: 'quiz.modeBadge.both',
+  single: 'quiz.modeBadge.single',
+  dual: 'quiz.modeBadge.dual',
+};
+
+export default function QuizScreen({ attackerType, gameMode, quizMode, onExit: _onExit, language }: QuizScreenProps) {
   const { t, i18n } = useTranslation();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -53,7 +61,7 @@ export default function QuizScreen({ attackerType, gameMode, onExit: _onExit, la
   }, [getTypeName, t, language]);
 
   const [question, setQuestion] = useState<QuestionState>({
-    opponentTypes: getRandomOpponentTypes(),
+    opponentTypes: generateOpponentTypes(quizMode),
     selectedMultiplier: null,
     isCorrect: null,
     questionNumber: 1,
@@ -67,12 +75,12 @@ export default function QuizScreen({ attackerType, gameMode, onExit: _onExit, la
     }
     setQuestion(prev => ({
       ...prev,
-      opponentTypes: getRandomOpponentTypes(),
+      opponentTypes: generateOpponentTypes(quizMode),
       selectedMultiplier: null,
       isCorrect: null,
       questionNumber: prev.questionNumber + 1,
     }));
-  }, []);
+  }, [quizMode]);
 
   const handleSelectMultiplier = useCallback((multiplier: number) => {
     const result = calculateEffectiveness(attackerType, question.opponentTypes, gameMode);
@@ -117,6 +125,9 @@ export default function QuizScreen({ attackerType, gameMode, onExit: _onExit, la
             <span className="text-sm text-gray-600 dark:text-gray-400">{t('quiz.score')}:</span>
             <span className="ml-2 font-bold text-indigo-600 dark:text-indigo-400">{question.score}</span>
           </div>
+          <span className="px-3 py-1.5 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 text-xs font-semibold">
+            {t(MODE_BADGE_KEYS[quizMode])}
+          </span>
           <div className="bg-white dark:bg-gray-800 rounded-lg px-4 py-2 shadow">
             <span className="text-sm text-gray-600 dark:text-gray-400">{t('quiz.question')}:</span>
             <span className="ml-2 font-bold text-gray-800 dark:text-white">{question.questionNumber}</span>

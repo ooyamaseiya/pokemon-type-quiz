@@ -265,22 +265,6 @@ export const TYPE_NAMES_EN: Record<Type, string> = {
   fairy: 'Fairy',
 };
 
-// Generate random opponent types
-export function getRandomOpponentTypes(): Type[] {
-  const singleType: Type = ALL_TYPES[Math.floor(Math.random() * ALL_TYPES.length)];
-
-  // 40% chance of dual type
-  if (Math.random() < 0.4) {
-    const secondType = ALL_TYPES[Math.floor(Math.random() * ALL_TYPES.length)];
-    // Ensure different types for dual-type
-    if (secondType !== singleType) {
-      return [singleType, secondType];
-    }
-  }
-
-  return [singleType];
-}
-
 // Calculate type effectiveness
 export interface CalculationResult {
   multiplier: number;
