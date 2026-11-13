@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Type, ALL_TYPES, TYPE_NAMES_EN, TYPE_NAMES_JP, getMultipliers, GameMode } from '../data/typeData';
+import { QuizMode, QUIZ_MODES } from '../types/quiz';
 import TypeBadge from './TypeBadge';
 import MultiplierCard from './MultiplierCard';
 import InstallPrompt from './InstallPrompt';
@@ -11,6 +12,8 @@ interface HomeScreenProps {
   onStartQuiz: () => void;
   gameMode: GameMode;
   onGameModeChange: (mode: GameMode) => void;
+  quizMode: QuizMode;
+  onQuizModeChange: (mode: QuizMode) => void;
 }
 
 export default function HomeScreen({
@@ -19,6 +22,8 @@ export default function HomeScreen({
   onStartQuiz,
   gameMode,
   onGameModeChange,
+  quizMode,
+  onQuizModeChange,
 }: HomeScreenProps) {
   const { t, i18n } = useTranslation();
   const language = i18n.language as 'en' | 'jp';
@@ -89,6 +94,28 @@ export default function HomeScreen({
             >
               {t('home.gameMode.go')}
             </button>
+          </div>
+        </div>
+
+        {/* Quiz Mode Selector */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            {t('home.quizMode')}
+          </label>
+          <div className="grid grid-cols-3 gap-3">
+            {QUIZ_MODES.map((mode) => (
+              <button
+                key={mode}
+                onClick={() => onQuizModeChange(mode)}
+                className={`py-3 px-2 rounded-lg font-semibold transition-all duration-200 ${
+                  quizMode === mode
+                    ? 'bg-indigo-600 text-white shadow-md'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                {t(`home.quizMode.${mode}`)}
+              </button>
+            ))}
           </div>
         </div>
 
