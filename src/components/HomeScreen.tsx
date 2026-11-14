@@ -1,10 +1,9 @@
-import { useTranslation } from 'react-i18next';
-import { Type, ALL_TYPES, TYPE_NAMES_EN, TYPE_NAMES_JP, getMultipliers, GameMode } from '../data/typeData';
-import { QuizMode, QUIZ_MODES } from '../types/quiz';
-import TypeBadge from './TypeBadge';
-import MultiplierCard from './MultiplierCard';
-import InstallPrompt from './InstallPrompt';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ALL_TYPES, GameMode, TYPE_NAMES_EN, TYPE_NAMES_JP, Type } from '../data/typeData';
+import { QUIZ_MODES, QuizMode } from '../types/quiz';
+import InstallPrompt from './InstallPrompt';
+import TypeBadge from './TypeBadge';
 
 interface HomeScreenProps {
   selectedType: Type;
@@ -34,7 +33,7 @@ export default function HomeScreen({
     return language === 'jp' ? TYPE_NAMES_JP[type] : TYPE_NAMES_EN[type];
   };
 
-  const multipliers = getMultipliers(gameMode);
+  // const multipliers = getMultipliers(gameMode);
 
   const handleTypeCardClick = (type: Type) => {
     setPendingType(type);
@@ -59,14 +58,14 @@ export default function HomeScreen({
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo/Title */}
-        <div className="text-center mb-8">
+        {/* <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-2">
             {t('app.title')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             {t('app.description')}
           </p>
-        </div>
+        </div> */}
 
         {/* Game Mode Selector */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
@@ -140,9 +139,9 @@ export default function HomeScreen({
         </div>
 
         {/* Preview Selected Type Badge */}
-        <div className="flex justify-center mb-6">
+        {/* <div className="flex justify-center mb-6">
           <TypeBadge type={selectedType} size="lg" />
-        </div>
+        </div> */}
 
         {/* Confirm Dialog */}
         {confirmDialogOpen && pendingType && (
@@ -184,7 +183,7 @@ export default function HomeScreen({
         </div>
 
         {/* Multiplier Preview */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        {/* <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             {t('quiz.multiplier')}
           </label>
@@ -197,7 +196,7 @@ export default function HomeScreen({
               />
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
