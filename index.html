@@ -9,8 +9,21 @@
     <link rel="apple-touch-icon" href="/pokemon-type-quiz/icons/icon-192.png" />
     <link rel="manifest" href="/pokemon-type-quiz/manifest.json" />
     <title>Pokémon Type Quiz</title>
-    <script type="module" crossorigin src="/pokemon-type-quiz/assets/index-FXwn7brS.js"></script>
-    <link rel="stylesheet" crossorigin href="/pokemon-type-quiz/assets/index-CmqB6K0L.css">
+    <script>
+      // Apply saved theme before first paint to avoid dark-mode flicker
+      (function () {
+        try {
+          var stored = localStorage.getItem('pokemon-quiz-theme');
+          var mode = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+          var isDark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.toggle('dark', isDark);
+        } catch (error) {
+          // localStorage unavailable
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/pokemon-type-quiz/assets/index-BIWr1zZ9.js"></script>
+    <link rel="stylesheet" crossorigin href="/pokemon-type-quiz/assets/index-BeWJt4_t.css">
   <link rel="manifest" href="/pokemon-type-quiz/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/pokemon-type-quiz/registerSW.js"></script></head>
   <body>
     <div id="root"></div>
