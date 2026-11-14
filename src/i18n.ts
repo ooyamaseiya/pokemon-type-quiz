@@ -1,5 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import { readStoredLanguage } from './utils/settings';
 
 export const resources = {
   en: {
@@ -138,7 +139,8 @@ export const resources = {
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: 'en',
+  lng: readStoredLanguage(),
+  fallbackLng: 'en',
   interpolation: {
     escapeValue: false,
   },

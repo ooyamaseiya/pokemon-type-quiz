@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ALL_TYPES, GameMode, TYPE_NAMES_EN, TYPE_NAMES_JP, Type } from '../data/typeData';
 import { QUIZ_MODES, QuizMode } from '../types/quiz';
+import { AppLanguage } from '../utils/settings';
 import InstallPrompt from './InstallPrompt';
 import TypeBadge from './TypeBadge';
 
@@ -25,7 +26,7 @@ export default function HomeScreen({
   onQuizModeChange,
 }: HomeScreenProps) {
   const { t, i18n } = useTranslation();
-  const language = i18n.language as 'en' | 'jp';
+  const language = i18n.language as AppLanguage;
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [pendingType, setPendingType] = useState<Type | null>(null);
 

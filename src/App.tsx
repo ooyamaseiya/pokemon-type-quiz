@@ -5,49 +5,87 @@ import HomeScreen from './components/HomeScreen';
 import QuizScreen from './components/QuizScreen';
 import { Type, GameMode } from './data/typeData';
 import { QuizMode, isQuizMode } from './types/quiz';
+import {
+  AppLanguage,
+  ThemeMode,
+  applyThemeClass,
+  persistLanguage,
+  persistTheme,
+  readStoredLanguage,
+  readStoredTheme,
+} from './utils/settings';
 
-export type ThemeMode = 'system' | 'dark' | 'light';
+export type { AppLanguage, ThemeMode } from './utils/settings';
 export type Screen = 'home' | 'quiz';
+
+function readStoredGameMode(): GameMode {
+  try {
+    const stored = localStorage.getItem('pokemon-quiz-game-mode');
+    if (stored === 'gen6' || stored === 'go') return stored;
+  } catch {
+    // localStorage unavailable
+  }
+  return 'gen6';
+}
+
+function readStoredQuizMode(): QuizMode {
+  try {
+    const stored = localStorage.getItem('pokemon-quiz-quiz-mode');
+    if (stored && isQuizMode(stored)) return stored;
+  } catch {
+    // localStorage unavailable
+  }
+  return 'both';
+}
 
 function App() {
   const { i18n } = useTranslation();
   const [screen, setScreen] = useState<Screen>('home');
   const [selectedType, setSelectedType] = useState<Type>('normal');
-  const [themeMode, setThemeMode] = useState<ThemeMode>('system');
-  const [language, setLanguage] = useState<'en' | 'jp'>('en');
-  const [gameMode, setGameMode] = useState<GameMode>('gen6');
-  const [quizMode, setQuizMode] = useState<QuizMode>('both');
+  const [themeMode, setThemeMode] = useState<ThemeMode>(() => readStoredTheme());
+  const [language, setLanguage] = useState<AppLanguage>(() => readStoredLanguage());
+  const [gameMode, setGameMode] = useState<GameMode>(() => readStoredGameMode());
+  const [quizMode, setQuizMode] = useState<QuizMode>(() => readStoredQuizMode());
   const [quizSession, setQuizSession] = useState(0);
 
-  // Load settings from localStorage
+  // Apply theme to the DOM and follow OS preference changes while in system mode
   useEffect(() => {
-    const savedTheme = localStorage.getItem('pokemon-quiz-theme') as ThemeMode | null;
-    const savedLang = localStorage.getItem('pokemon-quiz-language') as 'en' | 'jp' | null;
-    const savedGameMode = localStorage.getItem('pokemon-quiz-game-mode') as GameMode | null;
-    const savedQuizMode = localStorage.getItem('pokemon-quiz-quiz-mode');
+    applyThemeClass(themeMode);
+    if (themeMode !== 'system') return;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const handlePreferenceChange = () => {
+      applyThemeClass('system');
+    };
+    media.addEventListener('change', handlePreferenceChange);
+    return () => {
+      media.removeEventListener('change', handlePreferenceChange);
+    };
+  }, [themeMode]);
 
-    if (savedTheme) setThemeMode(savedTheme);
-    if (savedLang) setLanguage(savedLang);
-    if (savedGameMode) setGameMode(savedGameMode);
-    if (savedQuizMode && isQuizMode(savedQuizMode)) setQuizMode(savedQuizMode);
-  }, []);
-
-  // Save settings to localStorage
+  // Persist settings to localStorage
   useEffect(() => {
-    localStorage.setItem('pokemon-quiz-theme', themeMode);
+    persistTheme(themeMode);
   }, [themeMode]);
 
   useEffect(() => {
-    localStorage.setItem('pokemon-quiz-language', language);
+    persistLanguage(language);
     i18n.changeLanguage(language);
   }, [language, i18n]);
 
   useEffect(() => {
-    localStorage.setItem('pokemon-quiz-game-mode', gameMode);
+    try {
+      localStorage.setItem('pokemon-quiz-game-mode', gameMode);
+    } catch {
+      // localStorage unavailable
+    }
   }, [gameMode]);
 
   useEffect(() => {
-    localStorage.setItem('pokemon-quiz-quiz-mode', quizMode);
+    try {
+      localStorage.setItem('pokemon-quiz-quiz-mode', quizMode);
+    } catch {
+      // localStorage unavailable
+    }
   }, [quizMode]);
 
   const startQuiz = () => {

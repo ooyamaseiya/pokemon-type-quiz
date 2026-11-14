@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sun, Moon, Globe, LogOut } from 'lucide-react';
+import { Moon, Monitor, Sun, LogOut } from 'lucide-react';
 import { ThemeMode } from '../App';
+import { AppLanguage } from '../utils/settings';
+import { cycleTheme } from '../utils/settings';
 import { Type, TYPE_NAMES_EN, TYPE_NAMES_JP } from '../data/typeData';
 
 interface HeaderProps {
@@ -10,8 +11,8 @@ interface HeaderProps {
   attackerType?: Type;
   themeMode: ThemeMode;
   onThemeChange: (mode: ThemeMode) => void;
-  language: 'en' | 'jp';
-  onLanguageChange: (lang: 'en' | 'jp') => void;
+  language: AppLanguage;
+  onLanguageChange: (lang: AppLanguage) => void;
 }
 
 export default function Header({
@@ -24,23 +25,9 @@ export default function Header({
   onLanguageChange,
 }: HeaderProps) {
   const { t } = useTranslation();
-  
-  useEffect(() => {
-    const html = document.documentElement;
-    if (themeMode === 'dark') {
-      html.classList.add('dark');
-    } else if (themeMode === 'light') {
-      html.classList.remove('dark');
-    } else {
-      // System preference - check prefers-color-scheme
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (prefersDark) {
-        html.classList.add('dark');
-      } else {
-        html.classList.remove('dark');
-      }
-    }
-  }, [themeMode]);
+
+  const ThemeIcon = themeMode === 'system' ? Monitor : themeMode === 'light' ? Sun : Moon;
+  const themeLabel = t(`theme.${themeMode}`);
 
   return (
     <header className="bg-white dark:bg-gray-800 shadow-md px-4 py-3">
@@ -60,30 +47,16 @@ export default function Header({
         </div>
         
         <div className="flex items-center gap-2">
-          {/* Theme Toggle */}
-          <div className="flex rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600">
-            <button
-              onClick={() => onThemeChange('system')}
-              className={`px-2 py-1 text-xs ${themeMode === 'system' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}
-              title={t('theme.system')}
-            >
-              <Globe size={14} />
-            </button>
-            <button
-              onClick={() => onThemeChange('dark')}
-              className={`px-2 py-1 text-xs ${themeMode === 'dark' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}
-              title={t('theme.dark')}
-            >
-              <Moon size={14} />
-            </button>
-            <button
-              onClick={() => onThemeChange('light')}
-              className={`px-2 py-1 text-xs ${themeMode === 'light' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}
-              title={t('theme.light')}
-            >
-              <Sun size={14} />
-            </button>
-          </div>
+          {/* Theme Toggle - single icon button cycling system -> light -> dark -> system */}
+          <button
+            type="button"
+            onClick={() => onThemeChange(cycleTheme(themeMode))}
+            className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            title={themeLabel}
+            aria-label={themeLabel}
+          >
+            <ThemeIcon size={16} aria-hidden="true" />
+          </button>
           
           {/* Language Switcher */}
           <button
