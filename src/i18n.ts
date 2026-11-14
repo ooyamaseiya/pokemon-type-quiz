@@ -51,6 +51,9 @@ export const resources = {
       'dialog.cancel': 'Cancel',
       'dialog.startQuiz': 'Start Quiz',
       'dialog.selectedType': 'Selected Type',
+      'dialog.noQuestionsTitle': 'No Questions Available',
+      'dialog.noQuestionsMessage': 'You have no saved mistakes to review yet.',
+      'dialog.ok': 'OK',
       // Explanation templates
       'explanation.single': '{{attacker}} deals {{factor}}x against {{defender}}.',
       'explanation.dual': '{{attacker}} deals {{factors}} = {{total}}x damage.',
@@ -123,6 +126,9 @@ export const resources = {
       'dialog.cancel': 'キャンセル',
       'dialog.startQuiz': 'クイズ開始',
       'dialog.selectedType': '選択したタイプ',
+      'dialog.noQuestionsTitle': '出する問題がありません',
+      'dialog.noQuestionsMessage': 'もう間違えた問題が記録されていないため、出題できる問題がありません。',
+      'dialog.ok': 'OK',
       // Explanation templates
       'explanation.single': '{{attacker}}タイプの技は {{defender}}タイプに対して {{factor}}倍ダメージです。',
       'explanation.dual': '{{attacker}}タイプの技は {{factors}} ＝ {{total}}倍ダメージです。',

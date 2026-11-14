@@ -21,10 +21,12 @@ interface QuizScreenProps {
   language: 'en' | 'jp';
   mistakes: MistakeEntry[];
   onMistakesChange: (entries: MistakeEntry[]) => void;
+  onAttackerTypeChange: (type: Type) => void;
 }
 
 interface QuestionState {
   opponentTypes: Type[];
+  attackerType: Type;
   questionKey: string;
   selectedMultiplier: number | null;
   isCorrect: boolean | null;
@@ -39,7 +41,7 @@ const MODE_BADGE_KEYS: Record<QuizMode, string> = {
   mistakes: 'quiz.modeBadge.mistakes',
 };
 
-export default function QuizScreen({ attackerType, gameMode, quizMode, onExit, language, mistakes, onMistakesChange }: QuizScreenProps) {
+export default function QuizScreen({ attackerType, gameMode, quizMode, onExit, language, mistakes, onMistakesChange, onAttackerTypeChange }: QuizScreenProps) {
   const { t, i18n } = useTranslation();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -82,11 +84,12 @@ export default function QuizScreen({ attackerType, gameMode, quizMode, onExit, l
     const generated =
       quizMode === 'mistakes'
         ? (generateMistakeQuestion(mistakePoolRef.current, seenKeysRef.current, null) ??
-            { types: [attackerType], key: '__empty__', resetOccurred: false })
-        : generateOpponentTypes(quizMode, seenKeysRef.current, null);
+            { types: [attackerType], key: '__empty__', resetOccurred: false, attackerType })
+        : generateOpponentTypes(quizMode, seenKeysRef.current, null, attackerType);
     seenKeysRef.current.add(generated.key);
     return {
       opponentTypes: generated.types,
+      attackerType: generated.attackerType,
       questionKey: generated.key,
       selectedMultiplier: null,
       isCorrect: null,
@@ -103,7 +106,7 @@ export default function QuizScreen({ attackerType, gameMode, quizMode, onExit, l
     const generated =
       quizMode === 'mistakes'
         ? generateMistakeQuestion(mistakePoolRef.current, seenKeysRef.current, question.questionKey)
-        : generateOpponentTypes(quizMode, seenKeysRef.current, question.questionKey);
+        : generateOpponentTypes(quizMode, seenKeysRef.current, question.questionKey, attackerType);
     if (generated === null) {
       setCompleted(true);
       return;
@@ -115,18 +118,19 @@ export default function QuizScreen({ attackerType, gameMode, quizMode, onExit, l
     setQuestion(prev => ({
       ...prev,
       opponentTypes: generated.types,
+      attackerType: generated.attackerType,
       questionKey: generated.key,
       selectedMultiplier: null,
       isCorrect: null,
       questionNumber: prev.questionNumber + 1,
     }));
-  }, [quizMode, question.questionKey]);
+  }, [quizMode, question.questionKey, attackerType]);
 
   const handleSelectMultiplier = useCallback((multiplier: number) => {
-    const result = calculateEffectiveness(attackerType, question.opponentTypes, gameMode);
+    const result = calculateEffectiveness(question.attackerType, question.opponentTypes, gameMode);
     const isCorrect = multiplier === result.multiplier;
 
-    const entry: MistakeEntry = { attackerType, defenderTypes: question.opponentTypes, gameMode };
+    const entry: MistakeEntry = { attackerType: question.attackerType, defenderTypes: question.opponentTypes, gameMode };
     mistakePoolRef.current = isCorrect
       ? removeMistake(mistakePoolRef.current, entry)
       : addMistake(mistakePoolRef.current, entry);
@@ -148,10 +152,14 @@ export default function QuizScreen({ attackerType, gameMode, quizMode, onExit, l
         handleNext();
       }, 1000);
     }
-  }, [attackerType, question.opponentTypes, gameMode, handleNext, onMistakesChange]);
+  }, [question.attackerType, question.opponentTypes, gameMode, handleNext, onMistakesChange]);
 
-  const result = calculateEffectiveness(attackerType, question.opponentTypes, gameMode);
-  const explanation = question.isCorrect !== null ? generateExplanation(attackerType, question.opponentTypes, result) : '';
+  useEffect(() => {
+    onAttackerTypeChange(question.attackerType);
+  }, [question.attackerType, onAttackerTypeChange]);
+
+  const result = calculateEffectiveness(question.attackerType, question.opponentTypes, gameMode);
+  const explanation = question.isCorrect !== null ? generateExplanation(question.attackerType, question.opponentTypes, result) : '';
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -201,7 +209,7 @@ export default function QuizScreen({ attackerType, gameMode, quizMode, onExit, l
           {/* Attacker column */}
           <div className="flex flex-col items-center gap-2">
             <span className="text-sm text-gray-600 dark:text-gray-400">{t('home.attackerType')}</span>
-            <TypeBadge type={attackerType} size="lg" />
+            <TypeBadge type={question.attackerType} size="lg" />
           </div>
 
           {/* Directional separator */}

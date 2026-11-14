@@ -43,6 +43,7 @@ function App() {
   const { i18n } = useTranslation();
   const [screen, setScreen] = useState<Screen>('home');
   const [selectedType, setSelectedType] = useState<Type>('normal');
+  const [quizAttackerType, setQuizAttackerType] = useState<Type>(selectedType);
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => readStoredTheme());
   const [language, setLanguage] = useState<AppLanguage>(() => readStoredLanguage());
   const [gameMode, setGameMode] = useState<GameMode>(() => readStoredGameMode());
@@ -126,7 +127,7 @@ function App() {
       <Header
         isQuizMode={screen === 'quiz'}
         onExit={exitQuiz}
-        attackerType={screen === 'quiz' ? selectedType : undefined}
+        attackerType={screen === 'quiz' ? quizAttackerType : undefined}
         themeMode={themeMode}
         onThemeChange={setThemeMode}
         language={language}
@@ -156,6 +157,7 @@ function App() {
           language={language}
           mistakes={mistakes}
           onMistakesChange={handleMistakesChange}
+          onAttackerTypeChange={setQuizAttackerType}
         />
       )}
     </div>

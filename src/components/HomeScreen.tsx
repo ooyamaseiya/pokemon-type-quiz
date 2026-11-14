@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ALL_TYPES, GameMode, TYPE_NAMES_EN, TYPE_NAMES_JP, Type } from '../data/typeData';
 import { QUIZ_MODES, QuizMode } from '../types/quiz';
@@ -31,6 +31,20 @@ export default function HomeScreen({
   const language = i18n.language as AppLanguage;
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [pendingType, setPendingType] = useState<Type | null>(null);
+  const [noQuestionsOpen, setNoQuestionsOpen] = useState(false);
+
+  useEffect(() => {
+    if (!noQuestionsOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setNoQuestionsOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [noQuestionsOpen]);
 
   const getTypeName = (type: Type) => {
     return language === 'jp' ? TYPE_NAMES_JP[type] : TYPE_NAMES_EN[type];
@@ -56,6 +70,19 @@ export default function HomeScreen({
   const handleCancel = () => {
     setConfirmDialogOpen(false);
     setPendingType(null);
+  };
+
+  const handleQuizModeSelect = (mode: QuizMode) => {
+    if (mode === 'mistakes') {
+      if (mistakeCount >= 1) {
+        onQuizModeChange('mistakes');
+        onStartQuiz();
+      } else {
+        setNoQuestionsOpen(true);
+      }
+      return;
+    }
+    onQuizModeChange(mode);
   };
 
   return (
@@ -108,18 +135,15 @@ export default function HomeScreen({
           <div className="grid grid-cols-2 gap-3">
             {QUIZ_MODES.map((mode) => {
               const isMistakes = mode === 'mistakes';
-              const disabled = isMistakes && mistakeCount === 0;
               return (
                 <button
                   key={mode}
-                  onClick={() => onQuizModeChange(mode)}
-                  disabled={disabled}
-                  title={disabled ? t('home.quizMode.mistakesEmpty') : undefined}
+                  onClick={() => handleQuizModeSelect(mode)}
                   className={`py-3 px-2 rounded-lg font-semibold transition-all duration-200 ${
                     quizMode === mode
                       ? 'bg-indigo-600 text-white shadow-md'
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  }`}
                 >
                   {isMistakes ? t('home.quizMode.mistakes', { count: mistakeCount }) : t(`home.quizMode.${mode}`)}
                 </button>
@@ -183,6 +207,38 @@ export default function HomeScreen({
                   {t('dialog.confirm')}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* No Questions Dialog */}
+        {noQuestionsOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={() => setNoQuestionsOpen(false)}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="no-questions-title"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 w-full max-w-sm"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <h2
+                id="no-questions-title"
+                className="text-xl font-bold text-gray-800 dark:text-white mb-4 text-center"
+              >
+                {t('dialog.noQuestionsTitle')}
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 text-center">
+                {t('dialog.noQuestionsMessage')}
+              </p>
+              <button
+                onClick={() => setNoQuestionsOpen(false)}
+                className="w-full py-3 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-colors"
+              >
+                {t('dialog.ok')}
+              </button>
             </div>
           </div>
         )}

@@ -64,12 +64,14 @@ export interface GeneratedQuestion {
   types: Type[];
   key: string;
   resetOccurred: boolean;
+  attackerType: Type;
 }
 
 export function generateOpponentTypes(
   quizMode: StandardQuizMode,
   seenKeys: ReadonlySet<string>,
   previousKey: string | null,
+  attackerType: Type,
 ): GeneratedQuestion {
   const primary = chooseSubset(quizMode);
   const subsets: QuestionSubset[] =
@@ -91,6 +93,7 @@ export function generateOpponentTypes(
         types: shuffleDisplayOrder(types),
         key: questionKey(types),
         resetOccurred: false,
+        attackerType,
       };
     }
   }
@@ -106,6 +109,7 @@ export function generateOpponentTypes(
     types: shuffleDisplayOrder(types),
     key: questionKey(types),
     resetOccurred: true,
+    attackerType,
   };
 }
 
@@ -130,5 +134,6 @@ export function generateMistakeQuestion(
     types: shuffleDisplayOrder(entry.defenderTypes),
     key: questionKey(entry.defenderTypes),
     resetOccurred: unseen.length === 0,
+    attackerType: entry.attackerType,
   };
 }
