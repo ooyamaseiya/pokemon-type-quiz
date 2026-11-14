@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import Header from './components/Header';
 import HomeScreen from './components/HomeScreen';
@@ -14,6 +14,7 @@ import {
   readStoredLanguage,
   readStoredTheme,
 } from './utils/settings';
+import { MistakeEntry, persistMistakes, readSavedMistakes } from './utils/mistakes';
 
 export type { AppLanguage, ThemeMode } from './utils/settings';
 export type Screen = 'home' | 'quiz';
@@ -45,7 +46,14 @@ function App() {
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => readStoredTheme());
   const [language, setLanguage] = useState<AppLanguage>(() => readStoredLanguage());
   const [gameMode, setGameMode] = useState<GameMode>(() => readStoredGameMode());
-  const [quizMode, setQuizMode] = useState<QuizMode>(() => readStoredQuizMode());
+  const [mistakes, setMistakes] = useState<MistakeEntry[]>(() => readSavedMistakes());
+  const [quizMode, setQuizMode] = useState<QuizMode>(() => {
+    const stored = readStoredQuizMode();
+    if (stored === 'mistakes' && readSavedMistakes().filter((m) => m.gameMode === gameMode).length === 0) {
+      return 'both';
+    }
+    return stored;
+  });
   const [quizSession, setQuizSession] = useState(0);
 
   // Apply theme to the DOM and follow OS preference changes while in system mode
@@ -88,14 +96,30 @@ function App() {
     }
   }, [quizMode]);
 
+  useEffect(() => {
+    persistMistakes(mistakes);
+  }, [mistakes]);
+
+  const handleMistakesChange = useCallback((entries: MistakeEntry[]) => {
+    setMistakes((prev) => [
+      ...prev.filter((m) => m.gameMode !== gameMode),
+      ...entries,
+    ]);
+  }, [gameMode]);
+
   const startQuiz = () => {
     setQuizSession((session) => session + 1);
     setScreen('quiz');
   };
 
   const exitQuiz = () => {
+    if (quizMode === 'mistakes' && mistakes.filter((m) => m.gameMode === gameMode).length === 0) {
+      setQuizMode('both');
+    }
     setScreen('home');
   };
+
+  const mistakeCount = mistakes.filter((m) => m.gameMode === gameMode).length;
 
   return (
     <div className="min-h-screen">
@@ -118,6 +142,7 @@ function App() {
           onGameModeChange={setGameMode}
           quizMode={quizMode}
           onQuizModeChange={setQuizMode}
+          mistakeCount={mistakeCount}
         />
       )}
 
@@ -129,6 +154,8 @@ function App() {
           quizMode={quizMode}
           onExit={exitQuiz}
           language={language}
+          mistakes={mistakes}
+          onMistakesChange={handleMistakesChange}
         />
       )}
     </div>

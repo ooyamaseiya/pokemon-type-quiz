@@ -1,5 +1,8 @@
 import { ALL_TYPES, Type } from '../data/typeData';
 import { QuizMode } from '../types/quiz';
+import { MistakeEntry } from './mistakes';
+
+export type StandardQuizMode = Exclude<QuizMode, 'mistakes'>;
 
 function randomFrom<T>(items: T[]): T {
   return items[Math.floor(Math.random() * items.length)];
@@ -25,7 +28,7 @@ const DUAL_POOL: Type[][] = ALL_TYPES.flatMap((first, index) =>
   ALL_TYPES.slice(index + 1).map((second) => [first, second]),
 );
 
-const POOLS: Record<QuizMode, Type[][]> = {
+const POOLS: Record<StandardQuizMode, Type[][]> = {
   single: SINGLE_POOL,
   dual: DUAL_POOL,
   both: [...SINGLE_POOL, ...DUAL_POOL],
@@ -39,7 +42,7 @@ const SUBSET_POOLS: Record<QuestionSubset, Type[][]> = {
 };
 
 // Existing rule: 'both' mode mixes 60% single-type and 40% dual-type questions.
-function chooseSubset(quizMode: QuizMode): QuestionSubset {
+function chooseSubset(quizMode: StandardQuizMode): QuestionSubset {
   if (quizMode === 'single') {
     return 'single';
   }
@@ -64,7 +67,7 @@ export interface GeneratedQuestion {
 }
 
 export function generateOpponentTypes(
-  quizMode: QuizMode,
+  quizMode: StandardQuizMode,
   seenKeys: ReadonlySet<string>,
   previousKey: string | null,
 ): GeneratedQuestion {
@@ -103,5 +106,29 @@ export function generateOpponentTypes(
     types: shuffleDisplayOrder(types),
     key: questionKey(types),
     resetOccurred: true,
+  };
+}
+
+/** Draw the next question from the saved-mistakes pool.
+ *  Returns null only when the pool is empty (session finished).
+ *  When every remaining pool entry has already been asked this session,
+ *  the seen set is flagged for reset (same semantics as standard modes). */
+export function generateMistakeQuestion(
+  pool: readonly MistakeEntry[],
+  seenKeys: ReadonlySet<string>,
+  previousKey: string | null,
+): GeneratedQuestion | null {
+  if (pool.length === 0) return null;
+  const unseen = pool.filter((entry) => !seenKeys.has(questionKey(entry.defenderTypes)));
+  const candidates =
+    unseen.length > 0
+      ? unseen
+      : pool.filter((entry) => questionKey(entry.defenderTypes) !== previousKey);
+  const fallback = candidates.length > 0 ? candidates : [...pool];
+  const entry = randomFrom(fallback);
+  return {
+    types: shuffleDisplayOrder(entry.defenderTypes),
+    key: questionKey(entry.defenderTypes),
+    resetOccurred: unseen.length === 0,
   };
 }

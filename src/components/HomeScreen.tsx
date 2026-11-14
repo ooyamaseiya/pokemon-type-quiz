@@ -14,6 +14,7 @@ interface HomeScreenProps {
   onGameModeChange: (mode: GameMode) => void;
   quizMode: QuizMode;
   onQuizModeChange: (mode: QuizMode) => void;
+  mistakeCount: number;
 }
 
 export default function HomeScreen({
@@ -24,6 +25,7 @@ export default function HomeScreen({
   onGameModeChange,
   quizMode,
   onQuizModeChange,
+  mistakeCount,
 }: HomeScreenProps) {
   const { t, i18n } = useTranslation();
   const language = i18n.language as AppLanguage;
@@ -37,6 +39,7 @@ export default function HomeScreen({
   // const multipliers = getMultipliers(gameMode);
 
   const handleTypeCardClick = (type: Type) => {
+    if (quizMode === 'mistakes' && mistakeCount === 0) return;
     setPendingType(type);
     setConfirmDialogOpen(true);
   };
@@ -102,20 +105,26 @@ export default function HomeScreen({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             {t('home.quizMode')}
           </label>
-          <div className="grid grid-cols-3 gap-3">
-            {QUIZ_MODES.map((mode) => (
-              <button
-                key={mode}
-                onClick={() => onQuizModeChange(mode)}
-                className={`py-3 px-2 rounded-lg font-semibold transition-all duration-200 ${
-                  quizMode === mode
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
-              >
-                {t(`home.quizMode.${mode}`)}
-              </button>
-            ))}
+          <div className="grid grid-cols-2 gap-3">
+            {QUIZ_MODES.map((mode) => {
+              const isMistakes = mode === 'mistakes';
+              const disabled = isMistakes && mistakeCount === 0;
+              return (
+                <button
+                  key={mode}
+                  onClick={() => onQuizModeChange(mode)}
+                  disabled={disabled}
+                  title={disabled ? t('home.quizMode.mistakesEmpty') : undefined}
+                  className={`py-3 px-2 rounded-lg font-semibold transition-all duration-200 ${
+                    quizMode === mode
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {isMistakes ? t('home.quizMode.mistakes', { count: mistakeCount }) : t(`home.quizMode.${mode}`)}
+                </button>
+              );
+            })}
           </div>
         </div>
 

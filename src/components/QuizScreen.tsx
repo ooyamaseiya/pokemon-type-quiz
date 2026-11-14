@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Trophy } from 'lucide-react';
 import {
   calculateEffectiveness,
   GameMode,
@@ -7,7 +8,8 @@ import {
   Type,
 } from '../data/typeData';
 import { QuizMode } from '../types/quiz';
-import { generateOpponentTypes } from '../utils/quizGenerator';
+import { generateMistakeQuestion, generateOpponentTypes } from '../utils/quizGenerator';
+import { MistakeEntry, addMistake, removeMistake } from '../utils/mistakes';
 import MultiplierCard from './MultiplierCard';
 import TypeBadge from './TypeBadge';
 
@@ -17,6 +19,8 @@ interface QuizScreenProps {
   quizMode: QuizMode;
   onExit: () => void;
   language: 'en' | 'jp';
+  mistakes: MistakeEntry[];
+  onMistakesChange: (entries: MistakeEntry[]) => void;
 }
 
 interface QuestionState {
@@ -32,9 +36,10 @@ const MODE_BADGE_KEYS: Record<QuizMode, string> = {
   both: 'quiz.modeBadge.both',
   single: 'quiz.modeBadge.single',
   dual: 'quiz.modeBadge.dual',
+  mistakes: 'quiz.modeBadge.mistakes',
 };
 
-export default function QuizScreen({ attackerType, gameMode, quizMode, onExit: _onExit, language }: QuizScreenProps) {
+export default function QuizScreen({ attackerType, gameMode, quizMode, onExit, language, mistakes, onMistakesChange }: QuizScreenProps) {
   const { t, i18n } = useTranslation();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -63,8 +68,22 @@ export default function QuizScreen({ attackerType, gameMode, quizMode, onExit: _
 
   const seenKeysRef = useRef<Set<string>>(new Set());
 
+  // Source of truth for the saved-mistakes pool during the session (scoped to
+  // this game mode); the `mistakes` prop is only the initial snapshot.
+  const mistakePoolRef = useRef<MistakeEntry[]>(
+    mistakes.filter((m) => m.gameMode === gameMode),
+  );
+
+  const [completed, setCompleted] = useState(
+    quizMode === 'mistakes' && mistakePoolRef.current.length === 0,
+  );
+
   const [question, setQuestion] = useState<QuestionState>(() => {
-    const generated = generateOpponentTypes(quizMode, seenKeysRef.current, null);
+    const generated =
+      quizMode === 'mistakes'
+        ? (generateMistakeQuestion(mistakePoolRef.current, seenKeysRef.current, null) ??
+            { types: [attackerType], key: '__empty__', resetOccurred: false })
+        : generateOpponentTypes(quizMode, seenKeysRef.current, null);
     seenKeysRef.current.add(generated.key);
     return {
       opponentTypes: generated.types,
@@ -81,7 +100,14 @@ export default function QuizScreen({ attackerType, gameMode, quizMode, onExit: _
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
-    const generated = generateOpponentTypes(quizMode, seenKeysRef.current, question.questionKey);
+    const generated =
+      quizMode === 'mistakes'
+        ? generateMistakeQuestion(mistakePoolRef.current, seenKeysRef.current, question.questionKey)
+        : generateOpponentTypes(quizMode, seenKeysRef.current, question.questionKey);
+    if (generated === null) {
+      setCompleted(true);
+      return;
+    }
     if (generated.resetOccurred) {
       seenKeysRef.current.clear();
     }
@@ -100,6 +126,12 @@ export default function QuizScreen({ attackerType, gameMode, quizMode, onExit: _
     const result = calculateEffectiveness(attackerType, question.opponentTypes, gameMode);
     const isCorrect = multiplier === result.multiplier;
 
+    const entry: MistakeEntry = { attackerType, defenderTypes: question.opponentTypes, gameMode };
+    mistakePoolRef.current = isCorrect
+      ? removeMistake(mistakePoolRef.current, entry)
+      : addMistake(mistakePoolRef.current, entry);
+    onMistakesChange(mistakePoolRef.current);
+
     setQuestion(prev => ({
       ...prev,
       selectedMultiplier: multiplier,
@@ -116,7 +148,7 @@ export default function QuizScreen({ attackerType, gameMode, quizMode, onExit: _
         handleNext();
       }, 1000);
     }
-  }, [attackerType, question.opponentTypes, gameMode, handleNext]);
+  }, [attackerType, question.opponentTypes, gameMode, handleNext, onMistakesChange]);
 
   const result = calculateEffectiveness(attackerType, question.opponentTypes, gameMode);
   const explanation = question.isCorrect !== null ? generateExplanation(attackerType, question.opponentTypes, result) : '';
@@ -133,6 +165,22 @@ export default function QuizScreen({ attackerType, gameMode, quizMode, onExit: _
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
       <div className="max-w-4xl mx-auto">
+        {completed ? (
+          <div className="flex flex-col items-center justify-center min-h-[60vh] bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
+            <Trophy size={48} className="text-amber-500 mb-4" aria-hidden="true" />
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
+              {t('quiz.completed')}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">{t('quiz.allClear')}</p>
+            <button
+              onClick={onExit}
+              className="px-6 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-colors"
+            >
+              {t('quiz.backToHome')}
+            </button>
+          </div>
+        ) : (
+          <>
         {/* Score and Question */}
         <div className="flex justify-between items-center mb-6">
           <div className="bg-white dark:bg-gray-800 rounded-lg px-4 py-2 shadow">
@@ -210,6 +258,8 @@ export default function QuizScreen({ attackerType, gameMode, quizMode, onExit: _
               </button>
             )}
           </div>
+        )}
+          </>
         )}
       </div>
     </div>
