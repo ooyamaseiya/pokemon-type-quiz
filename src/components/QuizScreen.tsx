@@ -148,21 +148,27 @@ export default function QuizScreen({ attackerType, gameMode, quizMode, onExit: _
           </div>
         </div>
 
-        {/* Attacker Type Display */}
-        <div className="flex justify-center mb-6">
-          <div className="text-center">
-            <span className="text-sm text-gray-600 dark:text-gray-400 mb-2 block">{t('home.attackerType')}</span>
+        {/* Matchup: Attacker vs Opponent(s) */}
+        <div className="flex flex-row items-center justify-center gap-4 sm:gap-8 mb-6">
+          {/* Attacker column */}
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-sm text-gray-600 dark:text-gray-400">{t('home.attackerType')}</span>
             <TypeBadge type={attackerType} size="lg" />
           </div>
-        </div>
 
-        {/* Opponent Type Display */}
-        <div className="text-center mb-6">
-          <span className="text-sm text-gray-600 dark:text-gray-400 mb-2 block">{t('quiz.opponent')}</span>
-          <div className="flex justify-center gap-3">
-            {question.opponentTypes.map((type, idx) => (
-              <TypeBadge key={idx} type={type} size="lg" />
-            ))}
+          {/* Directional separator */}
+          <span className="text-2xl font-bold text-gray-400 dark:text-gray-500" aria-hidden="true">
+            →
+          </span>
+
+          {/* Opponent column */}
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-sm text-gray-600 dark:text-gray-400">{t('quiz.opponent')}</span>
+            <div className="flex flex-col items-center gap-2">
+              {question.opponentTypes.map((type, idx) => (
+                <TypeBadge key={idx} type={type} size="lg" />
+              ))}
+            </div>
           </div>
         </div>
 
