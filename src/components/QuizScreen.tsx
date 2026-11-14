@@ -1,15 +1,15 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   calculateEffectiveness,
-  Type,
   GameMode,
   getMultipliers,
+  Type,
 } from '../data/typeData';
 import { QuizMode } from '../types/quiz';
 import { generateOpponentTypes } from '../utils/quizGenerator';
-import TypeBadge from './TypeBadge';
 import MultiplierCard from './MultiplierCard';
+import TypeBadge from './TypeBadge';
 
 interface QuizScreenProps {
   attackerType: Type;
@@ -194,9 +194,9 @@ export default function QuizScreen({ attackerType, gameMode, quizMode, onExit: _
         {question.isCorrect !== null && (
           <div className={`rounded-xl p-6 mb-6 animate-fade-in ${question.isCorrect ? 'bg-green-100 dark:bg-green-900' : 'bg-red-100 dark:bg-red-900'}`}>
             <div className="text-center">
-              <h2 className={`text-2xl font-bold mb-2 ${question.isCorrect ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              {/* <h2 className={`text-2xl font-bold mb-2 ${question.isCorrect ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                 {question.isCorrect ? t('quiz.correct') : t('quiz.incorrect')}
-              </h2>
+              </h2> */}
               <p className="text-gray-700 dark:text-gray-300 text-sm">
                 {explanation}
               </p>
